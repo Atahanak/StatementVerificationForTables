@@ -17,9 +17,6 @@ def xml2dict(xml_file_name):
         doc = xmltodict.parse(file.read())
     #return json.dumps(doc, indent=4, sort_keys=True)
     return doc
-    
-def getLegend(data):
-    return data['document']['table']['legend']['@text']
 
 def getTableElements(table):
     print("************************************")
