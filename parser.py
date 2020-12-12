@@ -51,13 +51,15 @@ if __name__ == "__main__":
 
     file_name = sys.argv[1]
     data = xml2dict(file_name)
-    #print(json.dumps(data, indent=4, sort_keys=True))
-    table = data['document']['table']
-    if type(table) == dict:
-        getTableElements(table)        
-    elif type(table) == list:
-        for t in table:
-            getTableElements(t)
-    else:
-        print("Unknown table type.")
+    print(json.dumps(data, indent=4, sort_keys=True))
+    #table = data['document']['table']
+    #print("TABLE: ", type(table))
+    #if type(table) == list:
+    #    for t in table:
+    #        getTableElements(table)        
+    #elif type(table) == OrderedDict:
+    #    getTableElements(t)
+    #else:
+    #    getTableElements(table)
+        #print("Unknown table type.")
     #print(data)

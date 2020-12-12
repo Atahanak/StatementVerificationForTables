@@ -6,7 +6,7 @@ class StatementVerificationWithTablesDataset(torch.utils.data.Dataset):
     def __init__(self, encodings, labels):
         #self.root_dir = root_dir
         #self.transform = transform 
-        assert len(encodings) == len(labels)
+        assert len(encodings['input_ids']) == len(labels)
         self.encodings = encodings
         self.labels = labels
 
