@@ -51,15 +51,16 @@ if __name__ == "__main__":
     file_name = sys.argv[1]
     
     for filename in os.listdir(data_dir):
-        if filename.endswith(".xml"): 
+        if filename.endswith("20502.xml"): 
             file_path = data_dir + filename
-            print(file_path)
+            #print(file_path)
             get_tables_from_xml(file_path, tables) 
         else:
             continue
 
     for table in tables:
         temp = table.get_samples_and_labels()
+        #print(temp['samples'][1])
         samples += temp['samples']
         labels += temp['labels']
     #get_tables_from_xml(file_name, tables)
@@ -80,6 +81,8 @@ if __name__ == "__main__":
         truncation = True,
         #return_tensors="pt"
     )
+    print(train_data["input_ids"])
+    sys.exit()
     train_dataset = StatementVerificationWithTablesDataset(train_data, train_labels)
 
     test_data = tokenizer(
