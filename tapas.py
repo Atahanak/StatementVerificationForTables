@@ -91,8 +91,13 @@ for batch in train_dataloader:
     if number_processed >= split * total:
         accuracy.add_batch(predictions=model_predictions, references=labels)
 
+    if number_processed >= split * total:
+        print(f"TESTING: Processed {number_processed} / {total} examples")
+    else:
+        print(f"TRAINING: Processed {number_processed} / {total*split} examples")
+
     number_processed += batch["input_ids"].shape[0]
-    print(f"Processed {number_processed} / {total} examples")
+        
 
 final_score = accuracy.compute()
 print(final_score)
