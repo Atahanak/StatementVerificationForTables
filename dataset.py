@@ -22,6 +22,7 @@ class StatementVerificationWithTablesDataset(torch.utils.data.Dataset):
 
 
 class TableDataset(torch.utils.data.Dataset):
+    ''' SequenceClassification Tables '''
     def __init__(self, tables, statements, labels, tokenizer):
         self.tables = tables
         self.statements = statements

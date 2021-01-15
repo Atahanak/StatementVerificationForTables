@@ -24,7 +24,7 @@ labels = []
 file_name = sys.argv[1]
     
 for filename in os.listdir(data_dir):
-    if filename.endswith(".xml"): 
+    if filename.endswith("02.xml"): 
         file_path = data_dir + filename
         #print(file_path)
         get_tables_from_xml(file_path, tables) 
@@ -64,6 +64,8 @@ print("Starting evaluation...")
 number_processed = 0
 total = len(train_dataloader) * batch["input_ids"].shape[0] # number of batches * batch_size
 
+split = 0.8
+
 for batch in train_dataloader:
     # get the inputs
     input_ids = batch["input_ids"]
@@ -71,12 +73,23 @@ for batch in train_dataloader:
     token_type_ids = batch["token_type_ids"]
     labels = batch["label"]
 
+    # initialize model parameters
+    if number_processed < split * total:
+        optimizer.zero_grad()
+
     # forward pass
     outputs = model(input_ids=input_ids, attention_mask=attention_mask, token_type_ids=token_type_ids, labels=labels)
     model_predictions = outputs.logits.argmax(-1)
 
+    # backward pass
+    if number_processed < split * total:
+        loss = outputs.loss
+        loss.backward()
+        optimizer.step()
+
     # add metric
-    accuracy.add_batch(predictions=model_predictions, references=labels)
+    if number_processed >= split * total:
+        accuracy.add_batch(predictions=model_predictions, references=labels)
 
     number_processed += batch["input_ids"].shape[0]
     print(f"Processed {number_processed} / {total} examples")
