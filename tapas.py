@@ -36,7 +36,7 @@ def get_dataset(data_dir):
     return TableDataset(text_tables, statements, labels, tokenizer)
 
 train_dir = sys.argv[1]
-test_dir = sys.argv[1]
+test_dir = sys.argv[2]
 
 from transformers import TapasTokenizer
 from dataset import TableDataset
