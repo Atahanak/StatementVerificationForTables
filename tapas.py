@@ -20,7 +20,7 @@ def get_tables_from_xml(xml_file_name, tables):
 def get_dataset(data_dir):
     tables = []
     for filename in os.listdir(data_dir):
-        if filename.endswith("02.xml"): 
+        if filename.endswith(".xml"): 
             file_path = data_dir + filename
             get_tables_from_xml(file_path, tables) 
         else:
@@ -64,30 +64,33 @@ from datasets import load_metric
 accuracy = load_metric("accuracy")
 
 print("Starting training...")
-number_processed = 0
-total = len(train_dataloader) * batch["input_ids"].shape[0] # number of batches * batch_size
 
-for batch in train_dataloader:
-    # get the inputs
-    input_ids = batch["input_ids"].to(device)
-    attention_mask = batch["attention_mask"].to(device)
-    token_type_ids = batch["token_type_ids"].to(device)
-    labels = batch["label"].to(device)
+epochs = 3
+for ep in range(0, epochs):
+    number_processed = 0
+    total = len(train_dataloader) * batch["input_ids"].shape[0] # number of batches * batch_size
+    print(f"Epoch: {ep}")
+    for batch in train_dataloader:
+        # get the inputs
+        input_ids = batch["input_ids"].to(device)
+        attention_mask = batch["attention_mask"].to(device)
+        token_type_ids = batch["token_type_ids"].to(device)
+        labels = batch["label"].to(device)
 
-    # initialize model parameters
-    optimizer.zero_grad()
+        # initialize model parameters
+        optimizer.zero_grad()
 
-    # forward pass
-    outputs = model(input_ids=input_ids, attention_mask=attention_mask, token_type_ids=token_type_ids, labels=labels)
-    model_predictions = outputs.logits.argmax(-1)
+        # forward pass
+        outputs = model(input_ids=input_ids, attention_mask=attention_mask, token_type_ids=token_type_ids, labels=labels)
+        model_predictions = outputs.logits.argmax(-1)
 
-    # backward pass
-    loss = outputs.loss
-    loss.backward()
-    optimizer.step()
+        # backward pass
+        loss = outputs.loss
+        loss.backward()
+        optimizer.step()
 
-    print(f"TRAINING: Processed {number_processed} / {total} examples")
-    number_processed += batch["input_ids"].shape[0]
+        print(f"TRAINING: Processed {number_processed} / {total} examples")
+        number_processed += batch["input_ids"].shape[0]
         
 
 print("Starting evaluation...")
