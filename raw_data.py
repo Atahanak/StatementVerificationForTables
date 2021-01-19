@@ -7,7 +7,8 @@ class TableForVerification():
     def __init__(self, obj):
         self.label_map = {
             "refuted": 0,
-            "entailed": 1
+            "entailed": 1,
+            "unknown": 2
         }
         self.legend = ""
         self.caption = ""
@@ -49,7 +50,6 @@ class TableForVerification():
             if 'statement' in table['statements']:
                 if type(table['statements']['statement']) == list:
                     for s in table['statements']['statement']:
-                        #print(s)
                         self.statements.append((s['@text'].strip(' '), self.label_map[s['@type']]))
                 else:
                     self.statements.append((table['statements']['statement']['@text'].strip(' '), self.label_map[table['statements']['statement']['@type']]))

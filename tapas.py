@@ -17,87 +17,103 @@ def get_tables_from_xml(xml_file_name, tables):
             else:
                 tables.append(TableForVerification(table))
 
-data_dir = sys.argv[1]
-tables = []
-samples = []
-labels = [] 
-file_name = sys.argv[1]
+def get_dataset(data_dir):
+    tables = []
+    for filename in os.listdir(data_dir):
+        if filename.endswith("02.xml"): 
+            file_path = data_dir + filename
+            get_tables_from_xml(file_path, tables) 
+        else:
+            continue
+        
+    text_tables = []
+    statements = []
+    labels = []
+    for table in tables:
+        table.populate_tables_statements_labels(text_tables, statements, labels)
     
-for filename in os.listdir(data_dir):
-    if filename.endswith("02.xml"): 
-        file_path = data_dir + filename
-        #print(file_path)
-        get_tables_from_xml(file_path, tables) 
-    else:
-        continue
+    tokenizer = TapasTokenizer.from_pretrained("google/tapas-base-finetuned-tabfact")
+    return TableDataset(text_tables, statements, labels, tokenizer)
 
-text_tables = []
-statements = []
-labels = []
-for table in tables:
-    table.populate_tables_statements_labels(text_tables, statements, labels)
+train_dir = sys.argv[1]
+test_dir = sys.argv[1]
 
 from transformers import TapasTokenizer
 from dataset import TableDataset
-tokenizer = TapasTokenizer.from_pretrained("google/tapas-base-finetuned-tabfact")
-train_dataset = TableDataset(text_tables, statements, labels, tokenizer)
+#train set
+train_dataset = get_dataset(train_dir) #TableDataset(text_tables, statements, labels, tokenizer)
 train_dataloader = torch.utils.data.DataLoader(train_dataset, batch_size=4)
+
+#test set
+train_dataset = get_dataset(test_dir) #TableDataset(text_tables, statements, labels, tokenizer)
+test_dataloader = torch.utils.data.DataLoader(train_dataset, batch_size=4)
 
 from transformers import TapasConfig, AdamW, TapasForSequenceClassification
 model = TapasForSequenceClassification.from_pretrained("google/tapas-base-finetuned-tabfact")
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+model.to(device)
 optimizer = AdamW(model.parameters(), lr=5e-5) 
 
-#TRAINING
-
-
-#INFERENCE
+#TRANING
 batch = next(iter(train_dataloader))
 assert batch["input_ids"].shape == (4, 512)
 assert batch["attention_mask"].shape == (4, 512)
 assert batch["token_type_ids"].shape == (4, 512, 7)
-tokenizer.decode(batch["input_ids"][0])
 
 from datasets import load_metric
 accuracy = load_metric("accuracy")
 
-print("Starting evaluation...")
+print("Starting training...")
 number_processed = 0
 total = len(train_dataloader) * batch["input_ids"].shape[0] # number of batches * batch_size
 
-split = 0.8
-
 for batch in train_dataloader:
     # get the inputs
-    input_ids = batch["input_ids"]
-    attention_mask = batch["attention_mask"]
-    token_type_ids = batch["token_type_ids"]
-    labels = batch["label"]
+    input_ids = batch["input_ids"].to(device)
+    attention_mask = batch["attention_mask"].to(device)
+    token_type_ids = batch["token_type_ids"].to(device)
+    labels = batch["label"].to(device)
 
     # initialize model parameters
-    if number_processed < split * total:
-        optimizer.zero_grad()
+    optimizer.zero_grad()
 
     # forward pass
     outputs = model(input_ids=input_ids, attention_mask=attention_mask, token_type_ids=token_type_ids, labels=labels)
     model_predictions = outputs.logits.argmax(-1)
 
     # backward pass
-    if number_processed < split * total:
-        loss = outputs.loss
-        loss.backward()
-        optimizer.step()
+    loss = outputs.loss
+    loss.backward()
+    optimizer.step()
 
-    # add metric
-    if number_processed >= split * total:
-        accuracy.add_batch(predictions=model_predictions, references=labels)
-
-    if number_processed >= split * total:
-        print(f"TESTING: Processed {number_processed} / {total} examples")
-    else:
-        print(f"TRAINING: Processed {number_processed} / {total*split} examples")
-
+    print(f"TRAINING: Processed {number_processed} / {total} examples")
     number_processed += batch["input_ids"].shape[0]
         
+
+print("Starting evaluation...")
+batch = next(iter(test_dataloader))
+assert batch["input_ids"].shape == (4, 512)
+assert batch["attention_mask"].shape == (4, 512)
+assert batch["token_type_ids"].shape == (4, 512, 7)
+number_processed = 0
+total = len(test_dataloader) * batch["input_ids"].shape[0] # number of batches * batch_size
+
+for batch in test_dataloader:
+    # get the inputs
+    input_ids = batch["input_ids"].to(device)
+    attention_mask = batch["attention_mask"].to(device)
+    token_type_ids = batch["token_type_ids"].to(device)
+    labels = batch["label"].to(device)
+
+    # forward pass
+    outputs = model(input_ids=input_ids, attention_mask=attention_mask, token_type_ids=token_type_ids, labels=labels)
+    model_predictions = outputs.logits.argmax(-1)
+
+    # add metric
+    accuracy.add_batch(predictions=model_predictions, references=labels)
+
+    print(f"TESTING: Processed {number_processed} / {total} examples")
+    number_processed += batch["input_ids"].shape[0]
 
 final_score = accuracy.compute()
 print(final_score)
