@@ -4,12 +4,13 @@ Represents raw data in structured format with utilities attached
 import pandas as pd
 
 class TableForVerification():
-    def __init__(self, obj):
+    def __init__(self, obj, n):
         self.label_map = {
             "refuted": 0,
             "entailed": 1,
             "unknown": 2
         }
+        self.file_name = n 
         self.id = "" 
         self.legend = ""
         self.caption = ""
@@ -59,6 +60,7 @@ class TableForVerification():
                         else:
                             self.statements.append((s['@text'].strip(' '), self.label_map[s['@type']], s['@id']))
                 else:
+                    s = table['statements']['statement']
                     label = s['@type']
                     if label == '':
                         self.statements.append((s['@text'].strip(' '), None, s['@id']))
@@ -107,6 +109,7 @@ class TableForVerification():
         table = self.generate_df_from_table()
         for st in self.statements:
             meta_data["table_ids"].append(self.id)
+            meta_data["file_names"].append(self.file_name)
             meta_data["statement_ids"].append(st[2])
             tables.append(table)
             statements.append(st[0])
