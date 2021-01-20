@@ -15,7 +15,7 @@ def compute_metrics(pred):
     print(pred)
     labels = pred.label_ids
     preds = pred.predictions.argmax(-1)
-    precision, recall, f1, _ = precision_recall_fscore_support(labels, preds, average='binary')
+    precision, recall, f1, _ = precision_recall_fscore_support(labels, preds, average='macro')
     acc = accuracy_score(labels, preds)
     #print(f"acc: {acc}, f1: {f1}, precision: {precision}, recall: {recall}")
     return {
@@ -45,53 +45,64 @@ if __name__ == "__main__":
     #     DATA PREPROCESSING      # 
     ############################### 
     data_dir = sys.argv[1]
-    tables = []
-    samples = []
-    labels = [] 
-    file_name = sys.argv[1]
+    test_dir = sys.argv[2]
+    train_tables = []
+    train_samples = []
+    train_labels = [] 
     
     for filename in os.listdir(data_dir):
         if filename.endswith("20502.xml"): 
             file_path = data_dir + filename
-            #print(file_path)
-            get_tables_from_xml(file_path, tables) 
+            get_tables_from_xml(file_path, train_tables) 
         else:
             continue
 
-    for table in tables:
+    for table in train_tables:
         temp = table.get_samples_and_labels()
-        #print(temp['samples'][1])
-        samples += temp['samples']
-        labels += temp['labels']
-    #get_tables_from_xml(file_name, tables)
-    #data = tables[0].get_samples_and_labels() 
-    train_samples, val_samples, train_labels, val_labels = train_test_split(samples, labels, test_size=.2)
-    print(len(train_samples), len(train_labels), len(val_samples), len(val_labels))    
+        train_samples += temp['samples']
+        train_labels += temp['labels']
+    
+    test_dir = sys.argv[2]
+    test_tables = []
+    test_samples = []
+    test_labels = [] 
+    
+    for filename in os.listdir(test_dir):
+        if filename.endswith("2.xml"): 
+            file_path = test_dir + filename
+            #print(file_path)
+            get_tables_from_xml(file_path, test_tables) 
+        else:
+            continue
+
+    for table in test_tables:
+        temp = table.get_samples_and_labels()
+        test_samples += temp['samples']
+        test_labels += temp['labels']
+    #print("Here:", test_samples) 
     ############################### 
     # MODEL TRAINING & EVALUATION # 
     ###############################         
     model_name = "bert-base-uncased"
-    model = BertForSequenceClassification.from_pretrained(model_name)
+    model = BertForSequenceClassification.from_pretrained(model_name, num_labels=3)
     
     tokenizer = BertTokenizer.from_pretrained(model_name)
-    print(type(samples[0][0]))
     train_data = tokenizer(
         train_samples, 
         padding = True,
         truncation = True,
         #return_tensors="pt"
     )
-    print(train_data["input_ids"])
-    sys.exit()
+    #print(train_data["input_ids"])
     train_dataset = StatementVerificationWithTablesDataset(train_data, train_labels)
 
     test_data = tokenizer(
-        val_samples, 
+        test_samples, 
         padding = True,
         truncation = True,
         #return_tensors="pt"
     )
-    test_dataset = StatementVerificationWithTablesDataset(test_data, val_labels)
+    test_dataset = StatementVerificationWithTablesDataset(test_data, test_labels)
     
     training_args = TrainingArguments(
         output_dir='./results',          # output directory

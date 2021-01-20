@@ -58,8 +58,10 @@ class TableForVerification():
         result = ""
         for row in self.rows:
             for idx, col in enumerate(row):
-                result += f'{self.column_names[idx]} {col}. '
+                #result += f'{self.column_names[idx]} {col}. '
+                result += f'{col} '
             result += '\n'
+        print(result)
         return result
 
     def generate_df_from_table(self):
