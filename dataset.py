@@ -23,11 +23,12 @@ class StatementVerificationWithTablesDataset(torch.utils.data.Dataset):
 
 class TableDataset(torch.utils.data.Dataset):
     ''' SequenceClassification Tables '''
-    def __init__(self, tables, statements, labels, tokenizer):
+    def __init__(self, tables, statements, labels, tokenizer, meta_data=None):
         self.tables = tables
         self.statements = statements
         self.labels = labels
         self.tokenizer = tokenizer
+        self.meta_data = meta_data
 
     def __getitem__(self, idx):
         encoding = self.tokenizer(
@@ -39,9 +40,17 @@ class TableDataset(torch.utils.data.Dataset):
             #label=  self.labels[idx]
         )
         encoding = {key: val.squeeze(0) for key, val in encoding.items()}
-        encoding["label"] = self.labels[idx]
+        if self.labels != None:
+            encoding["label"] = self.labels[idx]
+        if self.meta_data != None:
+            encoding["file_name"] = self.meta_data["file_names"][idx]
+            encoding["table_id"] = self.meta_data["table_ids"][idx]
+            encoding["statement_id"] = self.meta_data["statement_ids"][idx]
         return encoding
 
     def __len__(self):
-        return len(self.labels)
+        if self.labels == None:
+            return len(self.statements)
+        else:
+            return len(self.labels)
 

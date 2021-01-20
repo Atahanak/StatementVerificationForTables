@@ -10,6 +10,7 @@ class TableForVerification():
             "entailed": 1,
             "unknown": 2
         }
+        self.id = "" 
         self.legend = ""
         self.caption = ""
         self.column_names = []
@@ -25,6 +26,8 @@ class TableForVerification():
         #print("****************")
 
     def parse_table(self, table):
+        if '@id' in table:
+            self.id = table['@id']
         if 'caption' in table:
             self.caption = table['caption']['@text'].strip(' ')
 
@@ -50,9 +53,17 @@ class TableForVerification():
             if 'statement' in table['statements']:
                 if type(table['statements']['statement']) == list:
                     for s in table['statements']['statement']:
-                        self.statements.append((s['@text'].strip(' '), self.label_map[s['@type']]))
+                        label = s['@type']
+                        if label == '':
+                            self.statements.append((s['@text'].strip(' '), None, s['@id']))
+                        else:
+                            self.statements.append((s['@text'].strip(' '), self.label_map[s['@type']], s['@id']))
                 else:
-                    self.statements.append((table['statements']['statement']['@text'].strip(' '), self.label_map[table['statements']['statement']['@type']]))
+                    label = s['@type']
+                    if label == '':
+                        self.statements.append((s['@text'].strip(' '), None, s['@id']))
+                    else:
+                        self.statements.append((s['@text'].strip(' '), self.label_map[s['@type']], s['@id']))
 
     def generate_sequence_from_table(self):
         result = ""
@@ -91,3 +102,11 @@ class TableForVerification():
             tables.append(table)
             statements.append(st[0])
             labels.append(st[1])
+    
+    def populate_tables_statements(self, tables, statements, meta_data):
+        table = self.generate_df_from_table()
+        for st in self.statements:
+            meta_data["table_ids"].append(self.id)
+            meta_data["statement_ids"].append(st[2])
+            tables.append(table)
+            statements.append(st[0])
