@@ -32,7 +32,7 @@ def get_dataset(data_dir):
     for table in tables:
         table.populate_tables_statements_labels(text_tables, statements, labels)
     
-    tokenizer = TapasTokenizer.from_pretrained("google/tapas-base-finetuned-tabfact")
+    tokenizer = TapasTokenizer.from_pretrained("google/tapas-base")
     return TableDataset(text_tables, statements, labels, tokenizer)
 
 train_dir = sys.argv[1]
@@ -49,7 +49,7 @@ train_dataset = get_dataset(test_dir) #TableDataset(text_tables, statements, lab
 test_dataloader = torch.utils.data.DataLoader(train_dataset, batch_size=4)
 
 from transformers import TapasConfig, AdamW, TapasForSequenceClassification
-model = TapasForSequenceClassification.from_pretrained("google/tapas-base-finetuned-tabfact")
+model = TapasForSequenceClassification.from_pretrained("google/tapas-base", num_labels=3)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model.to(device)
 optimizer = AdamW(model.parameters(), lr=5e-5) 
