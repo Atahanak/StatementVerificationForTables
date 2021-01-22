@@ -3,7 +3,7 @@ import torch
 class StatementVerificationWithTablesDataset(torch.utils.data.Dataset):
     ''' Statement Verification From Tables Dataset '''
 
-    def __init__(self, encodings, labels):
+    def __init__(self, encodings, labels, meta_data=None):
         #self.root_dir = root_dir
         #self.transform = transform 
         print(labels)
@@ -11,13 +11,19 @@ class StatementVerificationWithTablesDataset(torch.utils.data.Dataset):
         assert len(encodings['input_ids']) == len(labels)
         self.encodings = encodings
         self.labels = labels
+        self.meta_data = meta_data
 
     def __len__(self):
         return len(self.labels) 
     
     def __getitem__(self, idx):
-        sample = {key: torch.tensor(val[idx]) for key, val in self.encodings.items()}
-        sample['labels'] = torch.tensor(self.labels[idx])
+        sample = {key: val[idx].squeeze(0) for key, val in self.encodings.items()}
+        if self.labels[idx] != None:
+            sample['labels'] = torch.tensor(self.labels[idx])
+        if self.meta_data != None:
+            sample["file_name"] = self.meta_data["file_names"][idx]
+            sample["table_id"] = self.meta_data["table_ids"][idx]
+            sample["statement_id"] = self.meta_data["statement_ids"][idx]
         return sample
 
 
