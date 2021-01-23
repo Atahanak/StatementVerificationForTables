@@ -51,24 +51,24 @@ if __name__ == "__main__":
     train_labels = [] 
     
     for filename in os.listdir(data_dir):
-        if filename.endswith("20502.xml"): 
+        if filename.endswith(".xml"): 
             file_path = data_dir + filename
             get_tables_from_xml(file_path, train_tables) 
         else:
             continue
 
     for table in train_tables:
-        temp = table.get_samples_and_labels()
+        temp = table.get_samples_and_labels(train_samples)
         train_samples += temp['samples']
         train_labels += temp['labels']
-    
+    print(train_labels) 
     test_dir = sys.argv[2]
     test_tables = []
     test_samples = []
     test_labels = [] 
     
     for filename in os.listdir(test_dir):
-        if filename.endswith("2.xml"): 
+        if filename.endswith(".xml"): 
             file_path = test_dir + filename
             #print(file_path)
             get_tables_from_xml(file_path, test_tables) 

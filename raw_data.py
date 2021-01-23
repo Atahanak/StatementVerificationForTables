@@ -2,7 +2,7 @@
 Represents raw data in structured format with utilities attached
 """
 import pandas as pd
-
+import random
 class TableForVerification():
     def __init__(self, obj):
         self.label_map = {
@@ -61,7 +61,7 @@ class TableForVerification():
                 #result += f'{self.column_names[idx]} {col}. '
                 result += f'{col} '
             result += '\n'
-        print(result)
+        #print(result)
         return result
 
     def generate_df_from_table(self):
@@ -76,13 +76,17 @@ class TableForVerification():
         #print(self.statements[0][0])
         return [self.statements[0][1]]
 
-    def get_samples_and_labels(self):
+    def get_samples_and_labels(self, tt=None):
         samples = []
         labels = []
         tab_seq = self.generate_sequence_from_table()
         for st in self.statements:
             samples.append((tab_seq, st[0]))
             labels.append(st[1])
+        if tt != None and len(tt) > 0:
+            for x in range(0, int(len(self.statements)/3)):
+                samples.append((tab_seq, random.choice(tt)[1]))
+                labels.append(2)
         return {"samples": samples, "labels": labels}
     
     def populate_tables_statements_labels(self, tables, statements, labels):
