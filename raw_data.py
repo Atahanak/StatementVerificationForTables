@@ -2,6 +2,7 @@
 Represents raw data in structured format with utilities attached
 """
 import pandas as pd
+import random
 
 class TableForVerification():
     def __init__(self, obj):
@@ -89,3 +90,14 @@ class TableForVerification():
             tables.append(table)
             statements.append(st[0])
             labels.append(st[1])
+    def populate_tables_statements_labels_tt(self, tables, statements, labels):
+        pp = statements
+        table = self.generate_df_from_table()
+        for st in self.statements:
+            tables.append(table)
+            statements.append(st[0])
+            labels.append(st[1])
+        for x in range(0, int(len(self.statements)/3)):
+          tables.append(table)
+          labels.append(2)
+          statements.append(random.choice(pp))
