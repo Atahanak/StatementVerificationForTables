@@ -4,12 +4,26 @@ Represents raw data in structured format with utilities attached
 import pandas as pd
 import random
 class TableForVerification():
-    def __init__(self, obj):
-        self.label_map = {
-            "refuted": 0,
-            "entailed": 1,
-            "unknown": 2
-        }
+    def __init__(self, obj, dtype = None):
+        if dtype == None:
+            self.label_map = {
+                "refuted": 0,
+                "entailed": 1,
+                "unknown": 2
+            }
+        elif dtype == "un":
+            self.label_map = {
+                "refuted": 1,
+                "entailed": 1,
+                "unknown": 0
+            }
+        elif dtype == "enre":
+            self.label_map = {
+                "refuted": 0,
+                "entailed": 1,
+            }
+
+        self.dtype = dtype
         self.legend = ""
         self.caption = ""
         self.column_names = []
@@ -95,3 +109,16 @@ class TableForVerification():
             tables.append(table)
             statements.append(st[0])
             labels.append(st[1])
+
+    def populate_tables_statements_labels_tt(self, tables, statements, labels):
+        pp = statements
+        table = self.generate_df_from_table()
+        for st in self.statements:
+            tables.append(table)
+            statements.append(st[0])
+            labels.append(st[1])
+        if self.dtype != "enre":
+            for x in range(0, int(len(self.statements)/3)):
+                tables.append(table)
+                labels.append(self.label_map["unknown"])
+                statements.append(random.choice(pp))
