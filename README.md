@@ -3,7 +3,7 @@
 This repository contains models and datasets written as a part of the SEMEVAL 2021 Task9 - **Statement Verification &
 Evidence Finding with Tables**.
 
-Please visit [index.html](index.html) for the complete paper.
+Please visit [paper website](https://atahanak.github.io/statement_verification_for_tables/) for the complete paper.
 
 # Abstract
 
