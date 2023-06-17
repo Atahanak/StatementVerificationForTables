@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="author" content="Taha Atahan Akyıldız" />
+  <title>Semeval2021 Task9 - Statement Verification &amp; Evidence Finding with Tables</title>
+  <style>
+    html {
+      line-height: 1.7;
+      font-family: Georgia, serif;
+      font-size: 20px;
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 40em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      word-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 1em;
+      }
+    }
+    @media print {
+      body {
+        background-color: transparent;
+        color: black;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin-top: 1.7em;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.7em;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1.7em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1.7em 0 1.7em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      font-style: italic;
+    }
+    code {
+      font-family: Menlo, Monaco, 'Lucida Console', Consolas, monospace;
+      background-color: #f0f0f0;
+      font-size: 85%;
+      margin: 0;
+      padding: .2em .4em;
+    }
+    pre {
+      line-height: 1.5em;
+      padding: 1em;
+      background-color: #f0f0f0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+    }
+    hr {
+      background-color: #1a1a1a;
+      border: none;
+      height: 1px;
+      margin-top: 1.7em;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+    }
+    th, td {
+      border-bottom: 1px solid lightgray;
+      padding: 1em 3em 1em 0;
+    }
+    header {
+      margin-bottom: 6em;
+      text-align: center;
+    }
+    nav a:not(:hover) {
+      text-decoration: none;
+    }
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    span.underline{text-decoration: underline;}
+    div.column{display: inline-block; vertical-align: top; width: 50%;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    div.csl-bib-body { }
+    div.csl-entry {
+      clear: both;
+    }
+    .hanging div.csl-entry {
+      margin-left:2em;
+      text-indent:-2em;
+    }
+    div.csl-left-margin {
+      min-width:2em;
+      float:left;
+    }
+    div.csl-right-inline {
+      margin-left:2em;
+      padding-left:1em;
+    }
+    div.csl-indent {
+      margin-left: 2em;
+    }
+  </style>
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Semeval2021 Task9 - Statement Verification &amp; Evidence Finding with Tables</h1>
+<p class="author">Taha Atahan Akyıldız</p>
+<p class="date">October 2020</p>
+</header>
+<h1 id="abstract">Abstract</h1>
+<p>Information dirt is a severe problem that needs to be addressed. However, with the rise of social media, manually monitoring the validity of information has become infeasible. Thus fact verification is heavily investigated in the literature. However, structured (table) data-based fact verification remains mostly unexplored. To the best of our knowledge, the first dataset for table based fact verification is introduced recently by <span class="citation" data-cites="chen2020tabfact">(Chen et al. 2020)</span>. As with most downstream natural language processing tasks, fact verification is also improved by large-scale pre-trained language models. <span class="citation" data-cites="chen2020tabfact">(Chen et al. 2020)</span> showed how BERT can be leveraged for table based fact verification. Moreover, <span class="citation" data-cites="tapasf SAT">(Eisenschlos, Krichene, and Müller 2020; Zhang et al. 2020)</span> explored different ways to inject structural information into BERT, which substantially improved the performance of the model. In this work, we judiciously analyze various sequencing strategies and find that related information must be close to each other. Furthermore, we propose a two-level approach for table-based fact verification, which paves the way for specialized models for deciding whether the evidence contains sufficient information and whether the claim is entailed or refuted. It also enables to generate more training data without disturbing the balance and the quality of the dataset.</p>
+<h1 id="introduction">Introduction</h1>
+<p>Tables are ubiquitous. The most common way of representing data is via tables in various domains, i.e., scientific, governmental, business, etc. Although tables are explicit and concise, they are still open to misinterpretations, mostly if the analysis is done by people who are not competent in the respective domain. People tend to make rushed deductions instead of carefully analyzing the information that is displayed. While this is a convenient way of acquiring information in an ever-growing information-heavy world, it usually results in misinterpretations and information dirt. With the global reach of social media, information dirt is a severe concern and is only becoming more prominent. Hence the need for adequate fact verification services are of the utmost importance.</p>
+<p>Fact verification aims to determine whether a claim is entailed or refuted given a piece of evidence. It is heavily investigated in the literature with various downstream tasks, e.g., textual entailment, natural language inference, and claim verification on various datasets. For instance, the famous <span class="citation" data-cites="thorne2018fever">(Thorne et al. 2018)</span> dataset use Wikipedia pages as the evidence and modified sentences from the same data as claims.</p>
+<p>Although unstructured data-based fact verification is heavily investigated in the literature, structured data-based fact verification is underrepresented. Structured data poses a new challenge to the fact verification problem. In addition to linguistic reasoning, symbolic reasoning is also vital for successful classifications. To the best of our knowledge, the first work on this area is introduced by <span class="citation" data-cites="chen2020tabfact">(Chen et al. 2020)</span>. Although it provides a good baseline, the performance of the model is far behind the human performance.</p>
+<p>In this paper, we investigate several approaches for statement verification using tables that are collected from scientific articles. We mainly focus on large-scale pre-trained language model-based implementations. We show the effectiveness of different pre-trained models. Furthermore, we propose a two-level approach, which first determines if the evidence contains sufficient information for classification. If there is enough information, then the claim is classified as entailed or refuted.</p>
+<h1 id="related-work">Related Work</h1>
+<p>For structured-data-based fact verification, Hasan et al., <span class="citation" data-cites="aggchecker">(Jo et al. 2019)</span>, presented the first-ever end-to-end fact-checking tool AggChecker. In AggChecker, claims are translated into database queries and validated against raw relational data. However, with the success of large-scale language models like BERT <span class="citation" data-cites="devlin2019bert">(Devlin et al. 2019)</span> on downstream tasks, and as shown by Soleimani et al. <span class="citation" data-cites="soleimani2019bert">(Soleimani, Monz, and Worring 2019)</span> large-scale language models are gaining popularity over classical methods.</p>
+<p>Soleimani et al. demonstrated a BERT-based system for claim verification. The system inputs a potential evidence sentence and a claim to BERT and then applies a soft-max layer to classify each claim. The system achieved the state-of-the-art on the FEVER dataset <span class="citation" data-cites="thorne2018fever">(Thorne et al. 2018)</span>.</p>
+<p>Recently, Chen et al. <span class="citation" data-cites="chen2020tabfact">(Chen et al. 2020)</span> released a dataset for statement verification based on tables. The table data is collected from Wikipedia, and annotations are generated by amazon Mechanical-Turk. The authors demonstrated a classical NLP approach called Latent Program algorithm and also a modern approach that utilizes BERT for textual entailment. Although the former performs slightly worse, it is simpler and has a lot of room to grow. Zhang et al. <span class="citation" data-cites="SAT">(Zhang et al. 2020)</span> demonstrated that injecting structural information into BERT improves the performance of the model on claim verification. The authors believe the cells that belong to the same column are critical for verification. For this purpose, they change the mask of the self-attention layer for the higher levels of BERT to enable cross row reasoning. However, Zhang et al. assume vertical information is critical, where Herzig et al. <span class="citation" data-cites="tapas">(Herzig et al. 2020)</span> proposes TAPAS, a generalized approach to inject table structure information into the model. Herzig et al. propose to use three additional positional token embeddings as input to BERT, which are row, column, and rank embeddings. Influenced by <span class="citation" data-cites="tapas">(Herzig et al. 2020)</span>, Eisenschlos et al. <span class="citation" data-cites="tapasf">(Eisenschlos, Krichene, and Müller 2020)</span> create a balanced dataset of millions of training examples and pre-train TAPAS with this dataset before fine-tuning it with TabFact, achieving the state-of-the-art in table-based fact verification.</p>
+<p>Large-scale pre-trained model based fact verification consists of two main parts: data to text generation as table sequencing, textual entailment as claim verification. Data-to-text generation is another field that has seen growing interest in recent years. Wiseman et al. <span class="citation" data-cites="wiseman2017challenges">(Wiseman, Shieber, and Rush 2017)</span> proposed three evaluation metrics: content selection, relation generation, and content ordering. With the addition of the BLUE score, these four metrics provide a solid foundation for evaluation. Recently, Rebuffel, Clement, et al. <span class="citation" data-cites="rebuffel2019hierarchical">(Rebuffel et al. 2019)</span> achieved a new state-of-the-art on all four of the metrics using a hierarchical model that utilizes transformer encoders on Rotowire Dataset.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a> The model leverages the entity-record relationship present in the table, which mitigates the information lost by a linearized approach. However, data-to-text generation requires a supervised approach and is highly domain-specific.</p>
+<h1 id="proposed_approach">Proposed Approach</h1>
+<p>Current claim verification tasks are represented as a three-labeled classification problem. The model is expected to classify the claim as entailed, refuted, or unknown by making use of the evidence provided.</p>
+<p>We propose a generalized approach for fact verification, which can work with any large-scale pre-trained model. As shown in Figure <a href="#fig:model" data-reference-type="ref" data-reference="fig:model">1</a>, we adopt a two-level approach for fact verification, which effectively transforms a three classed classification problem (refuted, entailed, unknown) into two binary classification problems. At each level, we embody a language model for sequence classification. The first model is responsible for distinguishing whether the table contains sufficient information to determine whether the claim can be classified as refuted or entailed. Hence this is the entry point of our high-level model. The pre-trained second model is activated only if there is sufficient information, which decides whether the claim is refuted or entailed by the table.</p>
+<figure>
+<img src="figures/two-level.png" id="fig:model" alt="The high-level view of the two-level model." /><figcaption aria-hidden="true">The high-level view of the two-level model.</figcaption>
+</figure>
+<p>Our motivation for such an approach is two-fold. First, inherently, determining whether there is sufficient information in the table and whether the claim refutes or entails are two different tasks. With a two level approach, models are specialized for the task at hand. Second, for table-based fact verification, entailed and refuted claims need to be collected manually, which is a costly task. On the other hand, unknown claims can easily be collected from the internet or copied from claims that belong to the other tables in the dataset. With a single level approach, to have a balanced dataset throughout the classes, we are limited by the amount of entailed or refuted samples for unknown samples. With a two-level approach, we relax this limitation and enable the data scientist two generate twice as many unknown samples.</p>
+<h1 id="experimental-setting">Experimental Setting</h1>
+<p>For statement verification and evidence finding with tables, we follow task-A that is described in semeval2021-Task 9<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a>. For training, we use a single Titan X Pascal GPU with 12GB of memory.</p>
+<h2 id="methods-used-for-evaluation">Methods Used For Evaluation</h2>
+<p>Table Statement Support is a classification problem where the statement is labeled either entailed, refuted, or unknown. The models will be evaluated by two different metrics/ways. The first is standard precision and recall of the multi-class classification task. The second is the simple classification(binary), which will not penalize classifying unknown as entailed or refuted. The accuracy of the models are reported.</p>
+<h2 id="data-set-format">Data Set &amp; Format</h2>
+<p>The data is collected from scientific articles by using the API of Science Direct. Tables contain domain-specific information, as shown in Figure <a href="#fig:html" data-reference-type="ref" data-reference="fig:html">2</a>, making the dataset challenging for claim verification. Annotations are collected by crowdsourcing and also generated automatically. There are 1033 tables, manually annotated 6240 statements, shown in Figure <a href="#fig:st" data-reference-type="ref" data-reference="fig:st">3</a>, and auto-generated 174948 statements in total. The auto-generated statements are created by using a random paraphraser with a table understanding parser. The statements are labeled as entailed and refuted. Unknown statements are collected from other tables. Classes are equally distributed throughout the dataset. For the experiments we used only the manually annotated statements due to time constraints. Lastly, we use a <span class="math inline">90%</span>-<span class="math inline">10%</span> split for training and testing respectively.</p>
+<figure>
+<img src="figures/html.png" id="fig:html" alt="An example table" /><figcaption aria-hidden="true">An example table</figcaption>
+</figure>
+<figure>
+<img src="figures/statement_example.png" id="fig:st" alt="Statements that belongs to the Table in Figure 2" /><figcaption aria-hidden="true">Statements that belongs to the Table in Figure <a href="#fig:html" data-reference-type="ref" data-reference="fig:html">2</a></figcaption>
+</figure>
+<h2 id="algorithms-used-for-evaluation">Algorithms Used For Evaluation</h2>
+<h3 id="table-bert">BERT</h3>
+<p>For BERT, we used the model described in <span class="citation" data-cites="chen2020tabfact">(Chen et al. 2020)</span>. Four pre-trained versions of BERT is used: bert-base-uncased, bert-base-cased, bert-large-uncased and bert-large-cased. The base and large models contain 12-layer, 768-hidden, 12-heads, and 110M parameters, and 24-layer, 1024-hidden, 16-heads, and 336M parameters, respectively. All the models are trained using English text from Wikipedia and Book Corpus. For the base models, a batch size of 4 and a batch size of 2 is used for the large model. For all the models, 500 warmup steps and a weight decay of 0.01 is used. The standard BERT tokenizer is used for data preprocessing. Each row is linearized by concatenating each cell. Then these rows are concatenated, and caption is prepended, resulting in the table sequence. This sequence is concatenated with the statement by adding a [SEP] token in between and a [CLS] token to the beginning.</p>
+<h3 id="Tapas">TAPAS</h3>
+<p>The TAPAS model is built on top of bert-base and includes three additional positional embeddings for each token: column, row, and rank. The column and row embeddings represent the cell’s position, and they are zero if the token belongs to the statement. The rank embedding is used to define a relationship between the values of the cells. If the values are floats or dates, they are sorted, and their rank embedding becomes the respective position in the sorted array. As an input, the table is flattened into a sequence of words with a horizontal scan over the table. The question is concatenated at the beginning of the table sequence with a [SEP] token in between. The [SEP] token separates the two segments. Lastly, a [CLS] token is inserted at the start of the sequence.</p>
+<h3 id="tapas-tabfact">TAPAS-TabFact</h3>
+<p>This model is the same model to the one described in Section <a href="#Tapas" data-reference-type="ref" data-reference="Tapas">5.3.2</a>. It is fine-tuned with the TabFact dataset. It achieves the state-of-the-art on table based fact verification.</p>
+<h3 id="l-">2L-*</h3>
+<p>The details of the level algorithm are described in Section <a href="#proposed_approach" data-reference-type="ref" data-reference="proposed_approach">4</a> We use three variants of this approach, each embodying a different pre-trained model; 2L-TAPAS-TabFact, 2L-TAPAS, and 2L-BERT.<br />
+For TAPAS, TAPAS-TabFact, and 2L-* models adam optimizer with a learning rate of <span class="math inline">5<em>e</em> − 5</span> is used.</p>
+<h1 id="experiments-discussion">Experiments &amp; Discussion</h1>
+<p>The first key takeaway from Table <a href="#table:results" data-reference-type="ref" data-reference="table:results">1</a> is that all the models tend to classify the statements as entailed. This is expected since, while creating the table sequence, we are not forming full sentences. If the table only contains symbols, it will be hard for BERT to interpret the symbols’ meaning and their respective values. To tackle this problem, we plan to generate complete sentences for the table sequence.</p>
+<p>We observe that the BERT-base models plato around nine epochs and, as expected, are inferior to BERT-large scores. However, there is still room for growth for the large models. Due to time limitations, we can not report large model results for a higher number of epochs than 9.</p>
+<p>We observe that overall cased models perform better than the uncased ones except for BERT-base-uncased with 3 and 6 epochs. Although these two runs scored the highest and second-highest results, the other runs with BERT-uncased are inferior. Since our data is from scientific papers, cased characters are critical for representing symbols. We believe that these two results are an anomaly that would be eliminated with a better table sequencing strategy.</p>
+<div id="table:results">
+<table>
+<caption>The results for various different BERT models with different number of epochs. For this experiment unknown claims are not included. The metrics; accuracy, F1, precision and recall are given in percentage.</caption>
+<thead>
+<tr class="header">
+<th style="text-align: left;"><strong>Model</strong></th>
+<th style="text-align: right;"><span class="math inline"><em>e</em><em>p</em><em>o</em><em>c</em><em>h</em><em>s</em></span></th>
+<th style="text-align: right;">accuracy</th>
+<th style="text-align: right;">F1</th>
+<th style="text-align: right;">precision</th>
+<th style="text-align: right;">recall</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><code>BERT-large-cased</code></td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">61.86</td>
+<td style="text-align: right;">76.44</td>
+<td style="text-align: right;">61.86</td>
+<td style="text-align: right;">100</td>
+<td></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">62.08</td>
+<td style="text-align: right;">76.61</td>
+<td style="text-align: right;">62.08</td>
+<td style="text-align: right;">100</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"></td>
+<td style="text-align: right;">9</td>
+<td style="text-align: right;">63.63</td>
+<td style="text-align: right;">77.78</td>
+<td style="text-align: right;">63.63</td>
+<td style="text-align: right;">100</td>
+<td></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">58.98</td>
+<td style="text-align: right;">71.05</td>
+<td style="text-align: right;">62.62</td>
+<td style="text-align: right;">82.10</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"></td>
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">60.86</td>
+<td style="text-align: right;">75.64</td>
+<td style="text-align: right;">60.82</td>
+<td style="text-align: right;">100</td>
+<td></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: right;">9</td>
+<td style="text-align: right;">61.97</td>
+<td style="text-align: right;">76.52</td>
+<td style="text-align: right;">61.97</td>
+<td style="text-align: right;">100</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"></td>
+<td style="text-align: right;">15</td>
+<td style="text-align: right;">57.21</td>
+<td style="text-align: right;">67.06</td>
+<td style="text-align: right;">64.53</td>
+<td style="text-align: right;">69.80</td>
+<td></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">65.96</td>
+<td style="text-align: right;">74.57</td>
+<td style="text-align: right;">70.53</td>
+<td style="text-align: right;">79.09</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"></td>
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">65.74</td>
+<td style="text-align: right;">79.33</td>
+<td style="text-align: right;">65.74</td>
+<td style="text-align: right;">100</td>
+<td></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: right;">9</td>
+<td style="text-align: right;">59.53</td>
+<td style="text-align: right;">70.45</td>
+<td style="text-align: right;">66.51</td>
+<td style="text-align: right;">68.22</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"></td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">62.08</td>
+<td style="text-align: right;">76.61</td>
+<td style="text-align: right;">62.08</td>
+<td style="text-align: right;">100</td>
+<td></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">62.53</td>
+<td style="text-align: right;">76.94</td>
+<td style="text-align: right;">62.53</td>
+<td style="text-align: right;">100</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"></td>
+<td style="text-align: right;">9</td>
+<td style="text-align: right;">62.53</td>
+<td style="text-align: right;">76.94</td>
+<td style="text-align: right;">62.53</td>
+<td style="text-align: right;">100</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>We investigate different table sequencing strategies and report our results in Table <a href="#table:strat" data-reference-type="ref" data-reference="table:strat">[table:strat]</a>. We compare a horizontal scan of the table, which is described in Section <a href="#table-bert" data-reference-type="ref" data-reference="table-bert">5.3.1</a>, with taking the horizontal scan by adding the column titles of each cell next to their value. We also investigate adding the table caption and the legend to the sequence if they are provided. As expected, table caption increases the accuracy; however, legend has a negative effect. When we analyzed the tables that have a legend, we observed that the legends contain a lot of text. When the legend is added to the sequence, the input surpasses the BERT input’s recommended length limit. Furthermore, we observe that attaching column titles to the cell values substantially improves the performance. This shows that BERT can not learn structural information. Related information must be closed to each other for the model to excel. Findings of <span class="citation" data-cites="SAT tapasf">(Zhang et al. 2020; Eisenschlos, Krichene, and Müller 2020)</span>, i.e., when structural information is injected into the model via additional positional tokens <span class="citation" data-cites="tapas">(Herzig et al. 2020)</span> and changing the mask of self-attention, also support this claim.</p>
+<p>Table <a href="#table:models" data-reference-type="ref" data-reference="table:models">[table:models]</a> shows the superior performance of TAPAS compared to BERT. This indicates that injecting structural information into the pre-trained model is crucial for table-based fact verification. Moreover, we observe, as emphasized by Liu et al. <span class="citation" data-cites="liu2019roberta">(Liu et al. 2019)</span>, more data is always good. When TAPAS is fine-tuned with the TabFact dataset, it scores approximately <span class="math inline">3%</span> higher accuracy. Although TAPAS-base slightly outperforms 2L-TAPAS-base, 2L-TAPAS-base saturates much sooner.</p>
+<h1 id="conclusion-future-work">Conclusion &amp; Future Work</h1>
+<p>Fact verification is an important problem in an age where information is a very powerful commodity. There is extensive research on unstructured data-based fact verification but structured data-based fact verification is still mostly an unexplored area.</p>
+<p>In this work, we analyze the effect of the size of the pre-trained model by using BERT-base, and -large. We also investigate different table sequencing strategies and find out that attaching column titles to values and adding the caption to the sequence is beneficial. Lastly, we propose a generalized approach for fact verification which adopts a two level model. The two-level approach transforms the three-class classification problem to two binary classification problems and allows to increase the size of the dataset without disturbing the quality and the balance.</p>
+<p>We believe two-level approach to fact verification problem is promising and we leave level specific pre-trained model design as future work.</p>
+<h1 class="unnumbered" id="references">References</h1>
+<div id="refs" class="references csl-bib-body hanging-indent" role="doc-bibliography">
+<div id="ref-chen2020tabfact" class="csl-entry" role="doc-biblioentry">
+Chen, Wenhu, Hongmin Wang, Jianshu Chen, Yunkai Zhang, Hong Wang, Shiyang Li, Xiyou Zhou, and William Yang Wang. 2020. <span>“TabFact: A Large-Scale Dataset for Table-Based Fact Verification.”</span> <a href="http://arxiv.org/abs/1909.02164">http://arxiv.org/abs/1909.02164</a>.
+</div>
+<div id="ref-devlin2019bert" class="csl-entry" role="doc-biblioentry">
+Devlin, Jacob, Ming-Wei Chang, Kenton Lee, and Kristina Toutanova. 2019. <span>“BERT: Pre-Training of Deep Bidirectional Transformers for Language Understanding.”</span> <a href="http://arxiv.org/abs/1810.04805">http://arxiv.org/abs/1810.04805</a>.
+</div>
+<div id="ref-tapasf" class="csl-entry" role="doc-biblioentry">
+Eisenschlos, Julian Martin, Syrine Krichene, and Thomas Müller. 2020. <span>“Understanding Tables with Intermediate Pre-Training.”</span> <a href="http://arxiv.org/abs/2010.00571">http://arxiv.org/abs/2010.00571</a>.
+</div>
+<div id="ref-tapas" class="csl-entry" role="doc-biblioentry">
+Herzig, Jonathan, Paweł Krzysztof Nowak, Thomas Müller, Francesco Piccinno, and Julian Martin Eisenschlos. 2020. <span>“Tapas: Weakly Supervised Table Parsing via Pre-Training.”</span> In <em>Proceedings of the 58th Annual Meeting of the Association for Computational Linguistics (volume 1: Long Papers)</em>. Seattle, Washington, United States. <a href="https://www.aclweb.org/anthology/2020.acl-main.398/">https://www.aclweb.org/anthology/2020.acl-main.398/</a>.
+</div>
+<div id="ref-aggchecker" class="csl-entry" role="doc-biblioentry">
+Jo, Saehan, Immanuel Trummer, Weicheng Yu, Xuezhi Wang, Cong Yu, Daniel Liu, and Niyati Mehta. 2019. <span>“AggChecker: A Fact-Checking System for Text Summaries of Relational Data Sets.”</span> <em>Proc. VLDB Endow.</em> 12 (12): 1938–41. <a href="https://doi.org/10.14778/3352063.3352104">https://doi.org/10.14778/3352063.3352104</a>.
+</div>
+<div id="ref-liu2019roberta" class="csl-entry" role="doc-biblioentry">
+Liu, Yinhan, Myle Ott, Naman Goyal, Jingfei Du, Mandar Joshi, Danqi Chen, Omer Levy, Mike Lewis, Luke Zettlemoyer, and Veselin Stoyanov. 2019. <span>“RoBERTa: A Robustly Optimized BERT Pretraining Approach.”</span> <a href="http://arxiv.org/abs/1907.11692">http://arxiv.org/abs/1907.11692</a>.
+</div>
+<div id="ref-rebuffel2019hierarchical" class="csl-entry" role="doc-biblioentry">
+Rebuffel, Clément, Laure Soulier, Geoffrey Scoutheeten, and Patrick Gallinari. 2019. <span>“A Hierarchical Model for Data-to-Text Generation.”</span> <a href="http://arxiv.org/abs/1912.10011">http://arxiv.org/abs/1912.10011</a>.
+</div>
+<div id="ref-soleimani2019bert" class="csl-entry" role="doc-biblioentry">
+Soleimani, Amir, Christof Monz, and Marcel Worring. 2019. <span>“BERT for Evidence Retrieval and Claim Verification.”</span> <a href="http://arxiv.org/abs/1910.02655">http://arxiv.org/abs/1910.02655</a>.
+</div>
+<div id="ref-thorne2018fever" class="csl-entry" role="doc-biblioentry">
+Thorne, James, Andreas Vlachos, Christos Christodoulopoulos, and Arpit Mittal. 2018. <span>“FEVER: A Large-Scale Dataset for Fact Extraction and VERification.”</span> <a href="http://arxiv.org/abs/1803.05355">http://arxiv.org/abs/1803.05355</a>.
+</div>
+<div id="ref-wiseman2017challenges" class="csl-entry" role="doc-biblioentry">
+Wiseman, Sam, Stuart M. Shieber, and Alexander M. Rush. 2017. <span>“Challenges in Data-to-Document Generation.”</span> <a href="http://arxiv.org/abs/1707.08052">http://arxiv.org/abs/1707.08052</a>.
+</div>
+<div id="ref-SAT" class="csl-entry" role="doc-biblioentry">
+Zhang, Hongzhi, Yingyao Wang, Sirui Wang, Xuezhi Cao, Fuzheng Zhang, and Zhongyuan Wang. 2020. <span>“Table Fact Verification with Structure-Aware Transformer.”</span> In <em>Proceedings of the 2020 Conference on Empirical Methods in Natural Language Processing (EMNLP)</em>, 1624–29. Online: Association for Computational Linguistics. <a href="https://doi.org/10.18653/v1/2020.emnlp-main.126">https://doi.org/10.18653/v1/2020.emnlp-main.126</a>.
+</div>
+</div>
+<section class="footnotes" role="doc-endnotes">
+<hr />
+<ol>
+<li id="fn1" role="doc-endnote"><p>https://github.com/harvardnlp/boxscore-data/<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2" role="doc-endnote"><p>https://sites.google.com/view/sem-tab-facts<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section>
+</body>
+</html>
